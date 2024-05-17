@@ -1,0 +1,32 @@
+# Verifica se o script está sendo executado com privilégios de administrador
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Este script requer privilégios de administrador para executar."
+    $arg = "-File `"$($MyInvocation.MyCommand.Path)`""
+    Start-Process powershell -Verb RunAs -ArgumentList $arg
+    exit
+}
+
+# Define o nome de usuário e a senha
+$usuario = "Admin.mti"
+$senha = "K@p4sTr0ng&Secur3!"
+
+# Cria o objeto de senha seguro
+$senhaSegura = ConvertTo-SecureString -String $senha -AsPlainText -Force
+
+# Tenta criar o usuário local
+try {
+    New-LocalUser -Name $usuario -Password $senhaSegura -PasswordNeverExpires:$true -UserMayNotChangePassword:$false
+} catch {
+    Write-Host "Erro ao criar usuário local: $_"
+    exit
+}
+
+# Tenta adicionar o usuário ao grupo de Administradores
+try {
+    Add-LocalGroupMember -Group "Administradores" -Member $usuario
+} catch {
+    Write-Host "Erro ao adicionar usuário ao grupo de Administradores: $_"
+    exit
+}
+
+Write-Host "Usuário local '$usuario' criado com sucesso e adicionado ao grupo Administradores."
