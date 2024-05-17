@@ -1,0 +1,2 @@
+# para um perÃ­odo maior, basta alterar o trecho .AddDays(-30) para .AddDays(-999), onde 999 Ã© o nÃºmero de dias que deseja
+Get-ADComputer -Filter * -Properties * | Where-Object { $_.LastLogonDate -gt (Get-Date).AddDays(-30) } | Format-Table Name -AutoSize
