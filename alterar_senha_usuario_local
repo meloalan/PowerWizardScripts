@@ -1,0 +1,24 @@
+# Verifica se o script está sendo executado com privilégios de administrador
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Este script requer privilégios de administrador para executar."
+    $arg = "-File `"$($MyInvocation.MyCommand.Path)`""
+    Start-Process powershell -Verb RunAs -ArgumentList $arg
+    exit
+}
+
+# Nome do usuário a ser alterado
+$usuario = "usuarioquedesejamudarasenha"
+
+# Nova senha
+$novaSenha = "senha"
+
+# Tenta alterar a senha do usuário
+try {
+    $senhaSegura = ConvertTo-SecureString -String $novaSenha -AsPlainText -Force
+    Set-LocalUser -Name $usuario -Password $senhaSegura
+} catch {
+    Write-Host "Erro ao alterar a senha do usuário: $_"
+    exit
+}
+
+Write-Host "Senha do usuário '$usuario' alterada com sucesso para '$novaSenha'."
