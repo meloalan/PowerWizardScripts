@@ -1,0 +1,5 @@
+# Verificar a política de execução atual
+Get-ExecutionPolicy
+
+# Alterar a política de execução para permitir scripts (não recomendado para uso contínuo)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
