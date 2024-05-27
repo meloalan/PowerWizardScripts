@@ -1,0 +1,63 @@
+# Definir URL de Download e Caminho de Download
+$winrarUrl = "https://www.rarlab.com/rar/winrar-x64-701br.exe"
+$downloadPath = Join-Path -Path $env:TEMP -ChildPath "winrar.exe"
+
+# Função para baixar o instalador do WinRAR
+function Download-WinRAR {
+    Write-Output "Baixando o WinRAR..."
+    try {
+        Invoke-WebRequest -Uri $winrarUrl -OutFile $downloadPath -ErrorAction Stop
+        Write-Output "Download concluído: $downloadPath"
+    } catch {
+        Write-Output "Erro ao baixar o WinRAR: $_"
+        exit 1
+    }
+}
+
+# Função para desinstalar o WinRAR se ele estiver instalado
+function Uninstall-WinRAR {
+    $uninstallKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WinRAR archiver"
+    if (Test-Path $uninstallKey) {
+        $uninstallString = (Get-ItemProperty -Path $uninstallKey).UninstallString
+        if ($uninstallString) {
+            Write-Output "Desinstalando a versão atual do WinRAR..."
+            Start-Process -FilePath "cmd.exe" -ArgumentList "/c $uninstallString /S" -NoNewWindow -Wait
+            Start-Sleep -Seconds 5
+        }
+    }
+}
+
+# Função para instalar o WinRAR
+function Install-WinRAR {
+    if (Test-Path $downloadPath) {
+        Write-Output "Instalando a nova versão do WinRAR..."
+        Start-Process -FilePath $downloadPath -ArgumentList "/S" -NoNewWindow -Wait
+    } else {
+        Write-Output "O instalador do WinRAR não foi encontrado em $downloadPath"
+        exit 1
+    }
+}
+
+# Função para limpar o instalador baixado
+function Clean-Up {
+    if (Test-Path $downloadPath) {
+        Write-Output "Limpando o instalador baixado..."
+        Remove-Item -Path $downloadPath -Force
+    } else {
+        Write-Output "O instalador do WinRAR já foi removido ou não foi encontrado em $downloadPath"
+    }
+}
+
+# Baixar o instalador do WinRAR
+Download-WinRAR
+
+# Desinstalar o WinRAR se estiver instalado
+Uninstall-WinRAR
+
+# Instalar a nova versão do WinRAR
+Install-WinRAR
+
+# Limpar o instalador baixado
+Clean-Up
+
+Write-Output "Atualização do WinRAR concluída com sucesso."
