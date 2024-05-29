@@ -25,7 +25,7 @@ if ($updates) {
 
     # Instalar as atualizações pendentes
     Write-Output "Instalando atualizações pendentes..."
-    Install-WindowsUpdate -AcceptAll -AutoReboot
+    Install-WindowsUpdate -AcceptAll
 } else {
     Write-Output "Não há atualizações pendentes."
 }
