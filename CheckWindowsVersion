@@ -1,0 +1,12 @@
+# Caminho no registro onde a versão do Windows está armazenada
+$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+
+# Obtendo as propriedades do registro
+$osVersion = Get-ItemProperty -Path $registryPath -Name ReleaseId, DisplayVersion
+
+# Verificando se o Windows 11 23H2 está instalado
+if ($osVersion.ReleaseId -eq "23H2" -or $osVersion.DisplayVersion -like "23H2*") {
+    Write-Output "O Windows 11 23H2 está instalado."
+} else {
+    Write-Output "O Windows 11 23H2 não está instalado."
+}
