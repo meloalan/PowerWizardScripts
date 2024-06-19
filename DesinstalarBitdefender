@@ -1,0 +1,30 @@
+# URL da ferramenta de desinstalação do Bitdefender Endpoint Security Tools
+$url = "https://download.bitdefender.com/SMB/Hydra/release/bst_win/uninstallTool/BEST_uninstallTool.exe?_gl=1*2qshc0*_ga*MTAyOTM1MDI2NS4xNzE4ODEyNDc4*_ga_6M0GWNLLWF*MTcxODgxMjQ3OC4xLjEuMTcxODgxMjg3My4yMC4wLjczNzY0OTc3NA.."
+
+# Caminho para salvar o arquivo da ferramenta de desinstalação
+$tempFolder = [System.IO.Path]::GetTempPath()
+$toolPath = Join-Path -Path $tempFolder -ChildPath "BEST_uninstallTool.exe"
+
+# Baixar a ferramenta de desinstalação
+Write-Output "Baixando a ferramenta de desinstalação do Bitdefender..."
+Invoke-WebRequest -Uri $url -OutFile $toolPath
+
+if (Test-Path $toolPath) {
+    Write-Output "Ferramenta de desinstalação baixada com sucesso em: $toolPath"
+    
+    # Executar a ferramenta de desinstalação de forma oculta
+    Write-Output "Executando a ferramenta de desinstalação de forma oculta..."
+    Start-Process -FilePath $toolPath -ArgumentList "/S" -Wait -WindowStyle Hidden
+    
+    # Verificar se o Bitdefender Endpoint Security Tools foi desinstalado
+    $query = "SELECT * FROM Win32_Product WHERE Name LIKE '%Bitdefender Endpoint Security Tools%'"
+    $program = Get-WmiObject -Query $query
+    
+    if (-not $program) {
+        Write-Output "Bitdefender Endpoint Security Tools foi desinstalado com sucesso."
+    } else {
+        Write-Output "Falha ao desinstalar Bitdefender Endpoint Security Tools."
+    }
+} else {
+    Write-Output "Falha ao baixar a ferramenta de desinstalação do Bitdefender."
+}
