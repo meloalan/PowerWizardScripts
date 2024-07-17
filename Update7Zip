@@ -1,0 +1,56 @@
+# Função para obter a URL do instalador mais recente do 7-Zip
+function Get-Latest7ZipUrl {
+    $webContent = Invoke-WebRequest -Uri "https://www.7-zip.org/download.html"
+    $links = $webContent.Links
+    foreach ($link in $links) {
+        if ($link.href -match '7z\d+-x64\.exe$') {
+            return "https://www.7-zip.org/$($link.href)"
+        }
+    }
+    throw "Não foi possível encontrar o URL do instalador mais recente do 7-Zip."
+}
+
+# Obtenha a URL do instalador mais recente
+try {
+    $downloadUrl = Get-Latest7ZipUrl
+    Write-Output "URL do instalador mais recente do 7-Zip: $downloadUrl"
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}
+
+# Defina o caminho do instalador
+$installerPath = "$env:Temp\7zip.exe"
+
+# Baixe o instalador
+Write-Output "Baixando 7-Zip..."
+Invoke-WebRequest -Uri $downloadUrl -OutFile $installerPath
+
+# Feche o 7-Zip se estiver em execução
+Write-Output "Fechando 7-Zip se estiver em execução..."
+Stop-Process -Name "7zFM" -ErrorAction SilentlyContinue
+
+# Desinstale a versão antiga do 7-Zip (se necessário)
+Write-Output "Desinstalando a versão antiga do 7-Zip (se houver)..."
+$app = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "7-Zip*" }
+if ($app) {
+    $app.Uninstall()
+    Write-Output "Versão antiga do 7-Zip desinstalada."
+} else {
+    Write-Output "Nenhuma versão antiga do 7-Zip encontrada."
+}
+
+# Instale a nova versão
+Write-Output "Instalando a nova versão do 7-Zip..."
+Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+
+# Verifique se a instalação foi bem-sucedida
+if (Get-Command "C:\Program Files\7-Zip\7z.exe" -ErrorAction SilentlyContinue) {
+    Write-Output "7-Zip atualizado com sucesso."
+} else {
+    Write-Error "Falha ao atualizar o 7-Zip."
+}
+
+# Limpe o instalador
+Remove-Item -Path $installerPath
+Write-Output "Instalador removido."
