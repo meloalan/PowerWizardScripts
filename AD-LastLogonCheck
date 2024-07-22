@@ -1,0 +1,5 @@
+# Obter as informações do computador
+$computer = Get-ADComputer -Identity HOSTNAME -Properties LastLogonTimestamp
+
+# Exibir a última conexão
+$computer | Select-Object Name, @{Name="LastLogonTimestamp"; Expression={[DateTime]::FromFileTime($_.LastLogonTimestamp)}}
